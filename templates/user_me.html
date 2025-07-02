@@ -1,27 +1,134 @@
-<h2>欢迎</h2>
-<h3>我的帖子</h3>
-<ul>
-  {% for post in posts %}
-    <li style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-      <strong>标题：</strong>{{ post.post_title }}<br>
-      <strong>内容：</strong>{{ post.post_content }}<br>
-      <strong>地点：</strong>{{ post.post_location }}<br>
-      <strong>类型：</strong>{{ post.post_type }}<br>
-      <strong>时间：</strong>{{ post.post_time }}<br>
-      {% if post.image_path %}
-        <strong>图片：</strong><br>
-        <img src="{{ url_for('uploaded_file', filename=post.image_path.split('/')[-1]) }}" alt="图片" style="max-width:200px;"><br>
-      {% endif %}
-      <!-- 删除按钮 -->
-      <form action="/posts/delete" method="post" style="display:inline;">
-        <input type="hidden" name="post_id" value="{{ post.post_id }}">
-        <button type="submit" onclick="return confirm('确定要删除吗？')">删除</button>
-      </form>
-      <!-- 编辑按钮（可选） -->
-      <!-- <a href="/posts/edit/{{ post.post_id }}">编辑</a> -->
-    </li>
-  {% endfor %}
-</ul>
-<form action="/posts/new" method="get" style="display:inline;">
-    <button type="submit">发帖</button>
-</form>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>个人中心</title>
+    <style>
+        body {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto 0 auto;
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.15);
+            padding: 36px 28px 28px 28px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 18px;
+        }
+        .user-info {
+            text-align: center;
+            margin-bottom: 18px;
+            color: #444;
+        }
+        .nav-btns {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .big-btn {
+            display: inline-block;
+            padding: 16px 32px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(91,134,229,0.12);
+            transition: background 0.2s, transform 0.2s;
+            text-decoration: none;
+        }
+        .big-btn:hover {
+            background: linear-gradient(90deg, #5b86e5 0%, #36d1c4 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .post-list {
+            list-style: none;
+            padding: 0;
+        }
+        .post-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 18px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .post-title {
+            font-size: 1.08em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        .post-meta {
+            color: #888;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+        .post-content {
+            color: #444;
+        }
+        .post-img {
+            max-width: 180px;
+            border-radius: 6px;
+            margin-top: 6px;
+        }
+        .delete-btn {
+            margin-top: 8px;
+            background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 18px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .delete-btn:hover {
+            background: linear-gradient(90deg, #f09819 0%, #ff5858 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>个人中心</h1>
+        <div class="user-info">用户ID: {{ user }}</div>
+        <div class="nav-btns">
+            <a href="/posts/new" class="big-btn">发帖</a>
+            <a href="/posts" class="big-btn">浏览帖子</a>
+            <a href="/logout" class="big-btn">注销</a>
+        </div>
+        <h2 style="margin-bottom: 16px;">我的帖子</h2>
+        <ul class="post-list">
+        {% for post in posts %}
+            <li class="post-card">
+                <div class="post-title">{{ post.post_title }}</div>
+                <div class="post-meta">{{ post.post_type }} | {{ post.post_time }} | 地点: {{ post.post_location }}</div>
+                <div class="post-content">{{ post.post_content }}</div>
+                {% if post.image_path %}
+                    <img src="/{{ post.image_path }}" alt="图片" class="post-img">
+                {% endif %}
+                <form action="/posts/delete" method="post" style="display:inline;">
+                    <input type="hidden" name="post_id" value="{{ post.post_id }}">
+                    <button type="submit" class="delete-btn" onclick="return confirm('确定要删除吗？')">删除</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

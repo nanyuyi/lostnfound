@@ -2,21 +2,111 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>发布新帖子</title>
+    <title>发帖</title>
+    <style>
+        body {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 450px;
+            margin: 60px auto 0 auto;
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.15);
+            padding: 36px 28px 28px 28px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            margin-bottom: 4px;
+        }
+        textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            margin-top: 6px;
+        }
+        .big-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(91,134,229,0.12);
+            transition: background 0.2s, transform 0.2s;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .big-btn:hover {
+            background: linear-gradient(90deg, #5b86e5 0%, #36d1c4 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .link {
+            display: block;
+            margin-top: 18px;
+            color: #5b86e5;
+            text-decoration: none;
+            text-align: center;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h2>发布新帖子</h2>
-    <form method="post" enctype="multipart/form-data">
-        <label>标题：</label><input type="text" name="title" required><br>
-        <label>内容：</label><textarea name="content" required></textarea><br>
-        <label>地点：</label><input type="text" name="location"><br>
-        <label>类型：</label>
-        <select name="type" required>
-            <option value="lost">丢失</option>
-            <option value="found">捡到</option>
-        </select><br>
-        <label>图片：</label><input type="file" name="image" accept="image/*"><br>
-        <button type="submit">发布</button>
-    </form>
+    <div class="container">
+        <h1>发布新帖子</h1>
+        <form action="/posts/new" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>标题:</label>
+                <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+                <label>内容:</label>
+                <textarea name="content" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>地点:</label>
+                <input type="text" name="location" required>
+            </div>
+            <div class="form-group">
+                <label>类型:</label>
+                <select name="type" required>
+                    <option value="lost">失物</option>
+                    <option value="found">招领</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>图片:</label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+            <button type="submit" class="big-btn">发布</button>
+        </form>
+        <a href="/user/me" class="link">返回个人中心</a>
+    </div>
 </body>
 </html>
