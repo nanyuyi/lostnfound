@@ -1,12 +1,22 @@
 #执行 flask --app test run --host=0.0.0.0(监听所有IP)
 from flask import Flask, send_from_directory, request,render_template,session \
-    , redirect
+    , redirect, flash
 import hashlib
+import os
+from werkzeug.utils import secure_filename
+
 
 import user,post
 
 app = Flask(__name__)
 app.secret_key = random_bytes = hashlib.sha256().hexdigest()  # 设置一个随机的密钥
+UPLOAD_FOLDER = 'static/image/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# 工具函数
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/")
 def hello_world():
@@ -34,36 +44,48 @@ def register():
     userid = request.form['username']
     password = request.form['password']
     if not userid or not password:
-        return "Invalid input", 400
-    
+        flash("Invalid input")
+        return redirect('/register_page'), 400
+
     hashed_userid = hashlib.sha256(userid.encode()).hexdigest()
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     if user.register_user(hashed_password, hashed_userid):
-        return "User registered successfully", 201
-    
+        flash("User registered successfully")
+        return redirect('/login_page'), 201
+
 #登录
 @app.route("/login", methods=["POST"])
 def login():
     userid = request.form['username']
     password = request.form['password']
     if not userid or not password:
-        return "Invalid input", 400
-    
+        flash("Invalid input")
+        return redirect('/login_page'), 400
+    #对用户名和密码进行哈希处理
     hashed_userid = hashlib.sha256(userid.encode()).hexdigest()
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    
-    if user.login_user(hashed_password, hashed_userid):
+
+    if user.login_user(hashed_userid, hashed_password):
         session['userid'] = hashed_userid
         session['password'] = hashed_password
+        flash('登录成功')
         return redirect('/user/me'), 200      #登陆后跳转到个人中心
     else:
         return '<h1>Login failed</h1>', 401
+    
+#注销（可以在个人中心弄一个注销按钮）
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('已退出登录')
+    return redirect('/login_page')
 
 '''
 帖子部分，可以在这里浏览帖子,(发帖放在用户空间里把帖子和用户关联起来)
+弄一个发帖按钮，没登陆就登录，登陆了转向一个发帖页面(posts_new.html)
 浏览自己的帖子，删帖可以放在，一个用户空间里
 '''   
-@app.route('/posts',methods = ['GET', 'POST'])
+@app.route('/posts',methods = ['GET'])
 def handle_posts():#看帖子不用登录
     if request.method == 'GET':
         posts = post.view_post()
@@ -78,29 +100,76 @@ def handle_posts():#看帖子不用登录
             type=request.form['type'],
             userid=session['userid']
         )
+#发帖api,这里前端写几个框吧
+@app.route('/posts/new', methods=['GET','POST'])
+def new_post():
+    if 'userid' not in session:
+        return redirect('/login_page')
+    if request.method == 'GET':
+        return render_template('posts_new.html')
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        location = request.form['location']
+        type_ = request.form['type']
+        file = request.files.get('image')
+        image_path = None  # 初始化图片路径 
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(save_path)
+            image_path = save_path
+    if not title or not content or not location or not type:
+        return "Invalid input", 400
 
-#个人中心接口，前端这里设置一个发帖按钮,点击后转向发帖页面('/posts')
+    post.push_post(title, content, location, type_, session['userid'], image_path)
+    flash('发帖成功')
+    return redirect('/user/me')
+
+
+#个人中心接口，前端这里设置一个发帖按钮,点击后转向发帖页面('/posts/new')
 @app.route('/user/me', methods=['GET'])
 def user_me():
     #登录之后转到个人中心页面，不用检查登录情况
     userid = session['userid']
-    user_info = user.get_user_by_id(userid)
+    user_info = user.get_user(userid)
     posts = post.get_post_by_userid(userid)
-    return render_template('user_me.html', user=user_info, posts=posts)#也可以改为jsonify()
+    return render_template('user_me.html', user=userid, posts=posts if posts else [])#也可以改为jsonify()
 
+#上传文件
+@app.route('/static/image/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+#删除帖子
 #前端需要在每个post上添加一个删除按钮,点击后发送postid和userid到这个接口
 @app.route('/posts/delete', methods=['POST'])
 def delete_post():
-    user_id = request.form['userid']
+    user_id = session['userid']
     post_id = request.form['post_id']
     if 'userid' not in session or session['userid'] != user_id:
         return redirect('/login_page')
 
     if post.delete_post(user_id, post_id):
+        flash("Post deleted successfully")
         return redirect('/user/me')
     else:
-        return '<h1>Delete failed</h1>', 400
-
+        flash("Delete failed")
+        return redirect('/user/me')
+    
+#搜索api，这里前端在posts.html添加一个搜索框，输入关键词后提交到这个接口
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if 'userid' not in session:
+        return redirect('/login_page')
+    keyword = request.form.get('keyword') if request.method == 'POST' else request.args.get('keyword')
+    posts = []
+    if keyword:
+        posts = post.search_post_by_title(keyword)
+    return render_template('welcome.html', posts=posts, userid=session['userid'], is_admin=session.get('is_admin', False), search_keyword=keyword or '')
 
 if __name__ == "__main__":
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)

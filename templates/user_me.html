@@ -1,0 +1,27 @@
+<h2>欢迎</h2>
+<h3>我的帖子</h3>
+<ul>
+  {% for post in posts %}
+    <li style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+      <strong>标题：</strong>{{ post.post_title }}<br>
+      <strong>内容：</strong>{{ post.post_content }}<br>
+      <strong>地点：</strong>{{ post.post_location }}<br>
+      <strong>类型：</strong>{{ post.post_type }}<br>
+      <strong>时间：</strong>{{ post.post_time }}<br>
+      {% if post.image_path %}
+        <strong>图片：</strong><br>
+        <img src="{{ url_for('uploaded_file', filename=post.image_path.split('/')[-1]) }}" alt="图片" style="max-width:200px;"><br>
+      {% endif %}
+      <!-- 删除按钮 -->
+      <form action="/posts/delete" method="post" style="display:inline;">
+        <input type="hidden" name="post_id" value="{{ post.post_id }}">
+        <button type="submit" onclick="return confirm('确定要删除吗？')">删除</button>
+      </form>
+      <!-- 编辑按钮（可选） -->
+      <!-- <a href="/posts/edit/{{ post.post_id }}">编辑</a> -->
+    </li>
+  {% endfor %}
+</ul>
+<form action="/posts/new" method="get" style="display:inline;">
+    <button type="submit">发帖</button>
+</form>

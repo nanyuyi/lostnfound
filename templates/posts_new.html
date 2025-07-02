@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>发布新帖子</title>
+</head>
+<body>
+    <h2>发布新帖子</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label>标题：</label><input type="text" name="title" required><br>
+        <label>内容：</label><textarea name="content" required></textarea><br>
+        <label>地点：</label><input type="text" name="location"><br>
+        <label>类型：</label>
+        <select name="type" required>
+            <option value="lost">丢失</option>
+            <option value="found">捡到</option>
+        </select><br>
+        <label>图片：</label><input type="file" name="image" accept="image/*"><br>
+        <button type="submit">发布</button>
+    </form>
+</body>
+</html>

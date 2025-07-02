@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>帖子列表</title>
+</head>
+<body>
+    <ul>
+    {% for post in posts %}
+        <li style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+            <strong>标题：</strong>{{ post.post_title }}<br>
+            <strong>内容：</strong>{{ post.post_content }}<br>
+            <strong>地点：</strong>{{ post.post_location }}<br>
+            <strong>类型：</strong>{{ post.post_type }}<br>
+            <strong>时间：</strong>{{ post.post_time }}<br>
+            {% if post.image_path %}
+                <strong>图片：</strong><br>
+                <img src="{{ url_for('uploaded_file', filename=post.image_path.split('/')[-1]) }}" alt="图片" style="max-width:200px;"><br>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="/">返回</a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
