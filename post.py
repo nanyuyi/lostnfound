@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-def init_dbpost():
+def init_dbpost():#初始化数据库
     con = sqlite3.connect('post.db')
     cur = con.cursor()
     cur.execute('''
@@ -18,7 +18,7 @@ def init_dbpost():
     con.commit()
     con.close()
 
-def view_post(limit = 20):
+def view_post(limit = 20):#查看帖子
     con = sqlite3.connect('post.db')
     cur = con.cursor()
     res = cur.execute('''
@@ -40,7 +40,7 @@ def view_post(limit = 20):
         'post_time':row[6],
     }for row in post]
 
-def push_post(title, content, location, type, userid):
+def push_post(title, content, location, type, userid):#发帖
     con = sqlite3.connect('post.db')
     cur = con.cursor()
     cur.execute('''
@@ -51,6 +51,38 @@ def push_post(title, content, location, type, userid):
     post_id = cur.lastrowid
     con.close()
     return post_id
+
+def delete_post(user_id, post_id):#删帖
+    con = sqlite3.connect('post.db')
+    cur = con.cursor()
+    cur.execute('''
+        DELETE FROM posts WHERE id = ? AND userid = ?
+    ''', (post_id, user_id))
+    con.commit()
+    con.close()
+    return cur.rowcount > 0  # 返回是否删除成功
+
+def get_post_by_id(user_id):#根据用户id获取帖子
+    con = sqlite3.connect('post.db')
+    cur = con.cursor()
+    res = cur.execute('''
+        SELECT * FROM posts WHERE userid = ?
+    ''', (user_id,))
+    post = res.fetchone()
+    con.close()
+    if not post:
+        return None
+    else:
+        return [{
+            'post_id': post[0],
+            'post_title': post[1],
+            'user_id': post[2],
+            'post_content': post[3],
+            'post_location': post[4],
+            'post_type': post[5],
+            'post_time': post[6],
+        } for post in post]
+
 
 if __name__ == "__main__":
     con = sqlite3.connect('post.db')
