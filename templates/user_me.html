@@ -142,8 +142,7 @@
                 {% endif %}
                 <div style="display: flex; gap: 10px; margin-top: 8px;">
                     <a href="/posts/edit/{{ post.post_id }}" 
-                    class="big-btn edit-btn" 
-                    onclick="return confirm('确定修改吗？')">修改</a>
+                    class="big-btn edit-btn" >修改</a>
                     <form action="/posts/delete" method="post" style="display:inline; margin:0;">
                         <input type="hidden" name="post_id" value="{{ post.post_id }}">
                         <button type="submit" class="big-btn delete-btn" style="padding:7px 18px; font-size:1em;" onclick="return confirm('确定要删除吗？')">删除</button>

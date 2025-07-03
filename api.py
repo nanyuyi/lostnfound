@@ -169,7 +169,7 @@ def edit_post(post_id):
     
     if request.method == 'GET':
         post_data = post.get_post_by_id(post_id)
-        if not post_data or post_data['userid'] != session['userid']:
+        if not post_data or post_data['user_id'] != session['userid']:
             flash("Post not found or you do not have permission to edit it.")
             return redirect('/user/me')
         return render_template('posts_new.html', post=post_data)
@@ -180,7 +180,7 @@ def edit_post(post_id):
         location = request.form['location']
         type_ = request.form['type']
         file = request.files.get('image')
-        image_path = None
+        image_path = request.form.get('existing_image')  # 获取现有图片路径，如果没有上传新图片则使用现有图片
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)

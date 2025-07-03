@@ -129,6 +129,28 @@ def search_post_by_title(keyword, limit=20):
         'image_path': row[7]
     } for row in post]
 
+def get_post_by_id(post_id):
+    con = sqlite3.connect('post.db')
+    cur = con.cursor()
+    res = cur.execute('''
+        SELECT * FROM posts WHERE id = ?
+    ''', (post_id,))
+    post = res.fetchone()
+    con.close()
+    if not post:
+        return []
+    else:
+        return {
+            'post_id': post[0],
+            'post_title': post[1],
+            'post_content': post[2],
+            'post_location': post[3],
+            'post_type': post[4],
+            'post_time': post[5],
+            'user_id': post[6],
+            'image_path': post[7]
+        }
+
 if __name__ == "__main__":
     key = input("请输入操作类型（0: 查看帖子ID, 1: 删除帖子）:")
     con = sqlite3.connect('post.db')

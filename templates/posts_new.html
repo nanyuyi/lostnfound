@@ -79,7 +79,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>发布新帖子</h1>
+        {% if post %}
+            <h1>编辑帖子</h1>
+        {% else %}
+            <h1>发布新帖子</h1>
+        {% endif %}
         <form action="{{ url_for('edit_post', post_id=post.post_id) if post else '/posts/new' }}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label>标题:</label>
@@ -104,6 +108,7 @@
                 <label>图片:</label>
                 <input type="file" name="image" accept="image/*">
                 {% if post and post.image_path %}
+                    <input type="hidden" name="existing_image" value="{{ post.image_path }}">
                     <br>当前图片：<img src="{{ url_for('uploaded_file', filename=post.image_path.split('/')[-1]) }}" style="max-width:120px;">
                 {% endif %}
             </div>
