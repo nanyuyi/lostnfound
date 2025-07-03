@@ -53,6 +53,22 @@ def push_post(title, content, location, type, userid, image_path=None):#发帖
     con.close()
     return post_id
 
+def edit_post(post_id, title=None, content=None, location=None, type=None, image_path=None):#编辑帖子
+    con = sqlite3.connect('post.db')
+    cur = con.cursor()
+    cur.execute('''
+        UPDATE posts
+        SET title = ?
+            , content = ?
+            , location = ?
+            , type = ?
+            , image_path = ?
+        WHERE id = ?
+        ''',(title, content, location, type, image_path, post_id))
+    con.commit()
+    con.close()
+    return cur.rowcount > 0  # 返回是否更新成功
+
 def delete_post(user_id, post_id, is_admin=False):#删帖
     con = sqlite3.connect('post.db')
     cur = con.cursor()

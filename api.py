@@ -158,6 +158,41 @@ def delete_post():
         flash("Delete failed")
         return redirect('/user/me')
     
+#编辑帖子
+#前端需要在每个post上添加一个编辑按钮,点击后发送postid和userid到这个接口
+#这里前端可以复用编辑页面(posts_new.html)，
+#如果是编辑帖子就把post数据传到这个页面，前端可以根据post数据来判断是编辑还是发帖
+@app.route('/posts/edit/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    if 'userid' not in session:
+        return redirect('/login_page')
+    
+    if request.method == 'GET':
+        post_data = post.get_post_by_id(post_id)
+        if not post_data or post_data['userid'] != session['userid']:
+            flash("Post not found or you do not have permission to edit it.")
+            return redirect('/user/me')
+        return render_template('posts_new.html', post=post_data)
+
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        location = request.form['location']
+        type_ = request.form['type']
+        file = request.files.get('image')
+        image_path = None
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(save_path)
+            image_path = save_path
+        if not title or not content or not location or not type_:
+            flash("Invalid input")
+            return redirect(f'/posts/edit/{post_id}')
+        if post.edit_post(post_id, title, content, location, type_, image_path):
+            flash("Post edited successfully")
+            return redirect('/user/me')
+    
 #搜索api，这里前端在posts.html添加一个搜索框，输入关键词后提交到这个接口
 @app.route('/search', methods=['GET', 'POST'])
 def search():
